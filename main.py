@@ -1,10 +1,12 @@
 from intruder import Intruder
 from aircraft import Aircraft
 from statistics import mean, stdev
-from math import sqrt
 from numpy import arange
+import math
 
-"""These properties are my assumptions """
+"""These properties are my assumptions
+    These values can be changed and the code would still work
+"""
 
 # Channel Properties
 CHANNEL_X = 100
@@ -27,9 +29,13 @@ STEP_SIZE = 0.2
 
 def main():
 
+    if AIRCRAFT_STARTING_X > CHANNEL_X or AIRCRAFT_STARTING_Y > CHANNEL_Y:
+        print("Please ensure that the aircraft's starting position is correct")
+        return
+
     prob, velocity, stddev = find_optimal_straight_path()
-    print(f"The optimal route to take is with a horizontal velocity of {velocity}")
-    print(f"and a vertical velocity of {sqrt(AIRCRAFT_SPEED ** 2 - velocity ** 2)}")
+    print(f"The optimal route to take is with a horizontal velocity of {round(velocity,2)} in the same direction as the intruder")
+    print(f"with a vertical of {round(math.sqrt(AIRCRAFT_SPEED ** 2 - velocity ** 2),2)}")
     print(f"This gives a {prob} probability of successfully locating the intruder")
     print(f"with a standard deviation of {stddev}")
 
@@ -98,7 +104,7 @@ def find_optimal_straight_path():
     max_std = 0
 
     # Loop through a range of horizontal velocity to determine optimal
-    for x_speed in arange(-AIRCRAFT_SPEED, AIRCRAFT_SPEED+STEP_SIZE, STEP_SIZE):
+    for x_speed in arange(-AIRCRAFT_SPEED, AIRCRAFT_SPEED, STEP_SIZE):
         prob, std = stats(x_speed)
 
         print(f"Prob is {prob} for a horizontal velocity of {round(x_speed, 2)}")

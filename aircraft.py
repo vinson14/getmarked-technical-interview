@@ -1,4 +1,4 @@
-from math import sqrt, cos, sin, pi
+import math
 
 
 class Aircraft:
@@ -40,7 +40,7 @@ class Aircraft:
 
     # Calculate y_speed using pythogoras theorem
     def get_y_speed(self):
-        return sqrt(self.speed ** 2 - self.x_speed ** 2)
+        return math.sqrt(math.pow(self.speed,2) - math.pow(self.x_speed,2))
 
     # Check if intruder in range
     def check_intruder(self, intruder):
