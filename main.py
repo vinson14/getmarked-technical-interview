@@ -9,33 +9,84 @@ import math
 """
 
 # Channel Properties
-CHANNEL_X = int(input("Length of Channel: "))
-CHANNEL_Y = int(input("Width of Channel: "))
+while True:
+    try:
+        print("\nPlease key in the properties of the channel: \n")
+        CHANNEL_X = int(input("Length of Channel: "))
+        CHANNEL_Y = int(input("Width of Channel: "))
+    except ValueError:
+        print("\nPlease key in an integer\n")
+        continue
+
+    if CHANNEL_X <= 0 or CHANNEL_Y <= 0:
+        print("\nLength and width of channel must be larger than 0\n")
+        continue
+    else:
+        break
 
 # Aircraft Properties
-AIRCRAFT_SPEED = int(input("Speed of aircraft: "))
+while True:
+    try:
+        print("\nPlease key in the properties of the aircraft: \n")
+        AIRCRAFT_SPEED = float(input("Speed of aircraft: "))
+        SENSOR_RANGE = float(input("Range of Sensor: "))
+
+    except ValueError:
+        print("\nPlease key in an integer or a float\n")
+        continue
+
+    if AIRCRAFT_SPEED <= 0 or SENSOR_RANGE <= 0:
+        print("\nAircraft speed and sensor range must be larger than 0\n")
+        continue
+    else:
+        break
+    
 AIRCRAFT_STARTING_X = CHANNEL_X // 2
 AIRCRAFT_STARTING_Y = 0
-SENSOR_RANGE = int(input("Range of Sensor: "))
 
 # Intruder properties
-INTRUDER_SPEED = int(input("Speed of Intruder: "))
+while True:
+    try:
+        print("\nPlease key in the properties of the intruder: \n")
+        INTRUDER_SPEED = float(input("Speed of Intruder: "))
+
+
+    except ValueError:
+        print("\nPlease key in an integer or a float\n")
+        continue
+
+    if INTRUDER_SPEED <= 0:
+        print("\nIntruder speed must be larger than 0\n")
+        continue
+    else:
+        break
 
 # Other properties
+while True:
+    try:
+        print("\nPlease key in the properties for testing: \n")
+        NUM_OF_INTRUDERS = int(input("Number of intruders per sample: "))
+        SAMPLE_SIZE = int(input("Sample size: "))
+        STEP_SIZE = float(input("Step size of testing: "))
+
+
+    except ValueError:
+        print("\nNumber of intruders and sample size must be integers\n")
+        continue
+
+    if NUM_OF_INTRUDERS <= 0 or SAMPLE_SIZE <= 0 or STEP_SIZE <= 0:
+        print("\n\nValues must be larger than 0\n")
+        continue
+    else:
+        break
 DECIMAL_PLACES = 2
-NUM_OF_INTRUDERS = 100
-SAMPLE_SIZE = int(input("Sample size: "))
-STEP_SIZE = float(input("Step size of testing: "))
+
 
 
 def main():
 
-    if AIRCRAFT_STARTING_X > CHANNEL_X or AIRCRAFT_STARTING_Y > CHANNEL_Y:
-        print("Please ensure that the aircraft's starting position is correct")
-        return
-
     prob, velocity, stddev = find_optimal_straight_path()
-    print(f"Optimal horizontal velocity: {round(velocity,2)}\nProbability of success: {prob}")
+    print(f"\nOptimal horizontal velocity: {round(velocity,2)}\nProbability of success: {prob}")
 
 
 def single_intruder(aircraft, intruder):
