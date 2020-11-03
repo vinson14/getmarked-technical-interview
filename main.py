@@ -9,23 +9,23 @@ import math
 """
 
 # Channel Properties
-CHANNEL_X = 300
-CHANNEL_Y = 100
+CHANNEL_X = int(input("Length of Channel: "))
+CHANNEL_Y = int(input("Width of Channel: "))
 
 # Aircraft Properties
-AIRCRAFT_SPEED = 5
-AIRCRAFT_STARTING_X = 50
+AIRCRAFT_SPEED = int(input("Speed of aircraft: "))
+AIRCRAFT_STARTING_X = CHANNEL_X // 2
 AIRCRAFT_STARTING_Y = 0
-SENSOR_RANGE = 3
+SENSOR_RANGE = int(input("Range of Sensor: "))
 
 # Intruder properties
-INTRUDER_SPEED = 7
+INTRUDER_SPEED = int(input("Speed of Intruder: "))
 
 # Other properties
 DECIMAL_PLACES = 2
 NUM_OF_INTRUDERS = 100
-SAMPLE_SIZE = 100
-STEP_SIZE = 0.2
+SAMPLE_SIZE = int(input("Sample size: "))
+STEP_SIZE = float(input("Step size of testing: "))
 
 
 def main():
@@ -35,11 +35,7 @@ def main():
         return
 
     prob, velocity, stddev = find_optimal_straight_path()
-    print(f"The optimal route to take is with a horizontal velocity of {round(velocity,2)}\n\
-    in the same direction as the intruder \n\
-    with a vertical velocity of {round(math.sqrt(AIRCRAFT_SPEED ** 2 - velocity ** 2),2)}\n\
-    This gives a {prob} probability of successfully locating the intruder \n\
-    with a standard deviation of {stddev}.")
+    print(f"Optimal horizontal velocity: {round(velocity,2)}\nProbability of success: {prob}")
 
 
 def single_intruder(aircraft, intruder):
@@ -110,8 +106,6 @@ def find_optimal_straight_path():
     for x_speed in arange(-AIRCRAFT_SPEED, AIRCRAFT_SPEED, STEP_SIZE):
         prob, std = stats(x_speed)
 
-        print(
-            f"Prob is {prob} for a horizontal velocity of {round(x_speed, 2)}")
         # Store the horizontal velocity with the highest probability
         if prob > max_prob:
             max_prob = prob
