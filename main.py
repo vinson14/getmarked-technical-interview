@@ -1,12 +1,9 @@
 from intruder import Intruder
+from intruder import Intruder
 from aircraft import Aircraft
 from statistics import mean, stdev
 from numpy import arange
 import math
-
-"""These properties are my assumptions
-    These values can be changed and the code would still work
-"""
 
 # Channel Properties
 while True:
@@ -28,11 +25,11 @@ while True:
 while True:
     try:
         print("\nPlease key in the properties of the aircraft: \n")
-        AIRCRAFT_SPEED = float(input("Speed of aircraft: "))
-        SENSOR_RANGE = float(input("Range of Sensor: "))
+        AIRCRAFT_SPEED = int(input("Speed of aircraft: "))
+        SENSOR_RANGE = int(input("Range of Sensor: "))
 
     except ValueError:
-        print("\nPlease key in an integer or a float\n")
+        print("\nPlease key in an integer\n")
         continue
 
     if AIRCRAFT_SPEED <= 0 or SENSOR_RANGE <= 0:
@@ -48,7 +45,7 @@ AIRCRAFT_STARTING_Y = 0
 while True:
     try:
         print("\nPlease key in the properties of the intruder: \n")
-        INTRUDER_SPEED = float(input("Speed of Intruder: "))
+        INTRUDER_SPEED = int(input("Speed of Intruder: "))
 
 
     except ValueError:
@@ -65,105 +62,139 @@ while True:
 while True:
     try:
         print("\nPlease key in the properties for testing: \n")
-        NUM_OF_INTRUDERS = int(input("Number of intruders per sample: "))
+        NUM_INTRUDERS = int(input("Number of intruders per sample: "))
         SAMPLE_SIZE = int(input("Sample size: "))
-        STEP_SIZE = float(input("Step size of testing: "))
+        DECIMAL_PLACES = int(input("Decimal of testing: "))
 
 
     except ValueError:
         print("\nNumber of intruders and sample size must be integers\n")
         continue
 
-    if NUM_OF_INTRUDERS <= 0 or SAMPLE_SIZE <= 0 or STEP_SIZE <= 0:
+    if NUM_INTRUDERS <= 0 or SAMPLE_SIZE <= 0 or DECIMAL_PLACES <= 0:
         print("\n\nValues must be larger than 0\n")
         continue
     else:
         break
-DECIMAL_PLACES = 2
-
 
 
 def main():
+    opt_radius = optimal_radius()
+    print(f"Optimal radius is {opt_radius[0]} and it caught {opt_radius[1]} intruders with a standard deviation of {opt_radius[2]}")
 
-    prob, velocity, stddev = find_optimal_straight_path()
-    print(f"\nOptimal horizontal velocity: {round(velocity,2)}\nProbability of success: {prob}")
+    opt_xspeed = optimal_zigzag()
+    print(f"Optimal xspeed is {opt_xspeed[0]} and it caught {opt_xspeed[1]} intruders with a standard deviation of {opt_xspeed[2]}")
 
-
-def single_intruder(aircraft, intruder):
-
-    # Move intruder and aircraft until caught or intruder has reached the end
-    while intruder.x_pos < CHANNEL_X:
-        aircraft.move()
-        intruder.move()
-
-        if aircraft.check_intruder(intruder):
-
-            return True
-
-    return False
+    rand_move = random_movement()
+    print(f"Random movement catches {rand_move[0]} intruders with a standard deviation of {rand_move[1]}")
 
 
-def multiple_intruder(x_speed):
+def single_sample(pathtype, x_speed=0, radius=0):
 
-    # Keep count of number of intruders caught
-    intruders_caught = 0
+    number_intruders_caught = 0
 
-    # Create loop for number of intruders
-    for _ in range(NUM_OF_INTRUDERS):
+    for _ in range(NUM_INTRUDERS):
 
-        # Create instance of aircraft
         aircraft = Aircraft(speed=AIRCRAFT_SPEED,
-                            x_pos=AIRCRAFT_STARTING_X,
-                            y_pos=AIRCRAFT_STARTING_Y,
-                            sensor_range=SENSOR_RANGE,
-                            channel_x=CHANNEL_X,
-                            channel_y=CHANNEL_Y,
-                            x_speed=x_speed)
+                    x_pos=AIRCRAFT_STARTING_X,
+                    y_pos=AIRCRAFT_STARTING_Y,
+                    sensor_range=SENSOR_RANGE,
+                    channel_x=CHANNEL_X,
+                    channel_y=CHANNEL_Y)
 
         # Create instance of intruder
-        intruder = Intruder(speed=INTRUDER_SPEED,
-                            channel_x=CHANNEL_X,
+        intruder = Intruder(speed=INTRUDER_SPEED, 
+                            channel_x=CHANNEL_X, 
                             channel_y=CHANNEL_Y)
 
-        # Add to intruder count if caught
-        if single_intruder(aircraft, intruder):
-            intruders_caught += 1
 
-    return intruders_caught / NUM_OF_INTRUDERS
+        while intruder.x_pos < CHANNEL_X:
+
+            if pathtype == "ZIGZAG":
+                aircraft.move_zigzag(x_speed)
+
+            elif pathtype == "CIRCULAR":
+                aircraft.move_circular(radius)
+            
+            elif pathtype == "RANDOM":
+                aircraft.move_random()
+
+            intruder.move()
+
+            if aircraft.check_intruder(intruder):
+                number_intruders_caught += 1
+                break
+    
+    return number_intruders_caught
 
 
-def stats(x_speed):
+def optimal_radius():
 
-    # Collect samples of probability of catching intruders
-    samples = [
-        multiple_intruder(x_speed)
-        for _ in range(SAMPLE_SIZE)
-    ]
+    max_radius = (CHANNEL_Y - AIRCRAFT_STARTING_Y) // 2
 
-    # Calculate average and standard deviation from samples
-    avg = round(mean(samples), DECIMAL_PLACES)
-    std = round(stdev(samples), DECIMAL_PLACES)
+    max_intruders_caught = 0
+    std = 0
+    optimal_radius = 0
 
-    return (avg, std)
+    for radius in range(1, max_radius):
+        
+
+        # Collect samples
+        intr_caught = []
+
+        for _ in range(SAMPLE_SIZE):
+
+            intr_caught.append(single_sample("CIRCULAR", radius=radius))
+
+        # Calculate mean catch rate of this radius
+        mean_intr_caught = mean(intr_caught)
+
+        # Store if greater than existing one
+        if mean_intr_caught > max_intruders_caught:
+            max_intruders_caught = mean_intr_caught
+            std = round(stdev(intr_caught),DECIMAL_PLACES)
+            optimal_radius = radius
+
+    return (optimal_radius, max_intruders_caught, std)
+    
+
+def optimal_zigzag():
+
+    max_intruders_caught = 0
+    std = 0
+    optimal_x_speed = 0
+
+    for x_speed in range(-AIRCRAFT_SPEED, AIRCRAFT_SPEED+1):
+        
+        # Collect samples
+        intr_caught = []
+
+        for _ in range(SAMPLE_SIZE):
+
+            intr_caught.append(single_sample("ZIGZAG", x_speed=x_speed))
+
+        # Calculate mean catch rate of this x_speed
+        mean_intr_caught = mean(intr_caught)
+
+        # Store if greater than existing one
+        if mean_intr_caught > max_intruders_caught:
+            max_intruders_caught = mean_intr_caught
+            std = round(stdev(intr_caught),DECIMAL_PLACES)
+            optimal_x_speed = x_speed
+
+    return (optimal_x_speed, max_intruders_caught, std)
 
 
-def find_optimal_straight_path():
+def random_movement():
 
-    max_prob = 0
-    max_x_speed = 0
-    max_std = 0
+    # Collect samples
+    intr_caught = []
 
-    # Loop through a range of horizontal velocity to determine optimal
-    for x_speed in arange(-AIRCRAFT_SPEED, AIRCRAFT_SPEED, STEP_SIZE):
-        prob, std = stats(x_speed)
+    for _ in range(SAMPLE_SIZE):
 
-        # Store the horizontal velocity with the highest probability
-        if prob > max_prob:
-            max_prob = prob
-            max_x_speed = x_speed
-            max_std = std
+        intr_caught.append(single_sample("RANDOM"))
 
-    return (max_prob, max_x_speed, max_std)
+    return (mean(intr_caught), round(stdev(intr_caught),DECIMAL_PLACES))
 
 
 main()
