@@ -27,19 +27,22 @@ while True:
         print("\nPlease key in the properties of the aircraft: \n")
         AIRCRAFT_SPEED = int(input("Speed of aircraft: "))
         SENSOR_RANGE = int(input("Range of Sensor: "))
+        AIRCRAFT_STARTING_X = int(input("Starting X position of aircraft: "))
+        AIRCRAFT_STARTING_Y = int(input("Starting Y position of aircraft: "))
 
     except ValueError:
         print("\nPlease key in an integer\n")
         continue
 
-    if AIRCRAFT_SPEED <= 0 or SENSOR_RANGE <= 0:
-        print("\nAircraft speed and sensor range must be larger than 0\n")
+    if AIRCRAFT_SPEED <= 0 or SENSOR_RANGE <= 0 or AIRCRAFT_STARTING_X < 0 or AIRCRAFT_STARTING_Y < 0:
+        print("\nValues must be greater than 0\n")
+        continue
+    elif AIRCRAFT_STARTING_X > CHANNEL_X or AIRCRAFT_STARTING_Y > CHANNEL_Y:
+        print("\nAircraft must start within the channel\n")
         continue
     else:
         break
     
-AIRCRAFT_STARTING_X = CHANNEL_X // 2
-AIRCRAFT_STARTING_Y = 0
 
 # Intruder properties
 while True:
@@ -80,13 +83,13 @@ while True:
 
 def main():
     opt_radius = optimal_radius()
-    print(f"Optimal radius is {opt_radius[0]} and it caught {opt_radius[1]} intruders with a standard deviation of {opt_radius[2]}")
+    print(f"Circular Movement optimal radius is {opt_radius[0]} and it caught {opt_radius[1]}% of intruders with a standard deviation of {opt_radius[2]}")
 
     opt_xspeed = optimal_zigzag()
-    print(f"Optimal xspeed is {opt_xspeed[0]} and it caught {opt_xspeed[1]} intruders with a standard deviation of {opt_xspeed[2]}")
+    print(f"Zigzag Movement optimal xspeed is {opt_xspeed[0]} and it caught {opt_xspeed[1]}% of intruders with a standard deviation of {opt_xspeed[2]}")
 
     rand_move = random_movement()
-    print(f"Random movement catches {rand_move[0]} intruders with a standard deviation of {rand_move[1]}")
+    print(f"Random movement catches {rand_move[0]}% of intruders with a standard deviation of {rand_move[1]}")
 
 
 def single_sample(pathtype, x_speed=0, radius=0):
@@ -125,7 +128,7 @@ def single_sample(pathtype, x_speed=0, radius=0):
                 number_intruders_caught += 1
                 break
     
-    return number_intruders_caught
+    return (number_intruders_caught / NUM_INTRUDERS) * 100
 
 
 def optimal_radius():
